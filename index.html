@@ -2,7 +2,7 @@
 <html dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام طباعة التقارير المعتمد</title>
+    <title>نظام طباعة التقارير </title>
     <style>
         /* إعدادات الخط XB Niloofar */
         @font-face {
@@ -42,7 +42,12 @@
             background-color: white;
             display: none; /* يظهر عند بدء الإدخال */
         }
-
+@media print {
+    #report-page {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
         /* توزيع النصوص بدقة فوق القالب */
         .absolute-text { position: absolute; color: #333; font-weight: bold; pointer-events: none; }
 
