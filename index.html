@@ -37,8 +37,10 @@
         #report-page {
             width: 297mm; height: 210mm; /* مقاس A4 بالعرض */
             margin: auto; position: relative;
-            background-image: url('template.jpg'); /* يجب أن تكون الصورة بنفس المجلد */
+            background-image: url('https://raw.githubusercontent.com/Alsaidi5/faisform/main/template.jpg'), 
+                  url('template.jpg');
             background-size: 100% 100%;
+            background-repeat: no-repeat;
             background-color: white;
             display: none; /* يظهر عند بدء الإدخال */
         }
