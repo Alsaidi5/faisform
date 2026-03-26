@@ -4,30 +4,21 @@
     <meta charset="UTF-8">
     <title>نظام طباعة التقارير </title>
     <style>
-        /* إعدادات الخط XB Niloofar ليعمل على الجوال والكمبيوتر */
+        /* إعدادات الخط XB Niloofar */
         @font-face {
             font-family: 'XB Niloofar';
-            src: url('https://fonts.cdnfonts.com/s/73543/XBNiloofar.woff') format('woff'),
-                 local('XB Niloofar'); 
+            src: local('XB Niloofar'); /* سيعمل إذا كان الخط مثبتاً على جهازك */
             font-weight: normal;
-            font-style: normal;
         }
         @font-face {
             font-family: 'XB Niloofar';
-            src: url('https://fonts.cdnfonts.com/s/73543/XBNiloofarBold.woff') format('woff'),
-                 local('XB Niloofar Bold');
+            src: local('XB Niloofar Bold');
             font-weight: bold;
-            font-style: normal;
         }
 
         /* إعدادات الصفحة بالعرض Landscape */
         @page { size: A4 landscape; margin: 0; }
-        body { 
-            margin: 0; 
-            padding: 0; 
-            background: #e0e0e0; 
-            font-family: 'XB Niloofar', 'Arial', sans-serif; 
-        }
+        body { margin: 0; padding: 0; background: #e0e0e0; font-family: 'XB Niloofar', 'Arial', sans-serif; }
 
         /* لوحة التحكم (تختفي عند الطباعة) */
         .no-print { 
@@ -35,6 +26,156 @@
             padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
         }
         .grid-input { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: sans-serif; }
+        .full { grid-column: span 2; }
+        button { 
+            background: #00796b; color: white; border: none; padding: 15px; 
+            border-radius: 8px; cursor: pointer; width: 100%; font-size: 18px; font-weight: bold; 
+        }
+
+        /* قالب التقرير */
+        #report-page {
+            width: 297mm; height: 210mm; /* مقاس A4 بالعرض */
+            margin: auto; position: relative;
+            background-image: url('https://raw.githubusercontent.com/Alsaidi5/faisform/main/template.jpg'), 
+                  url('template.jpg');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-color: white;
+            display: none; /* يظهر عند بدء الإدخال */
+        }
+@media print {
+    #report-page {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+        /* توزيع النصوص بدقة فوق القالب */
+        .absolute-text { position: absolute; color: #333; font-weight: bold; pointer-events: none; }
+
+        /* الرقم التسلسلي في المستطيل الأصفر */
+        #p-serial { top: 26mm; left: 258mm; font-size: 25pt; color: #fff; width: 20mm; text-align: center; }
+
+        /* أماكن النصوص */
+        #p-newspaper { top: 50mm; left: 182mm; font-size: 13pt; width: 100mm; text-align: center; color: #fff;}
+        #p-date      { top: 85mm; left: 194mm; font-size: 14pt; width: 30mm; text-align: center; }
+        #p-keywords  { top: 123mm; left: 188mm; font-size: 12pt; width: 40mm; text-align: center; line-height: 1.4; }
+
+        /* نص الخبر الطويل (مع ميزة الخط التلقائي) */
+        #p-text { 
+            top: 25mm; right: 197mm; width: 75mm; height: 132mm;
+            font-size: 13pt; /* الحجم الابتدائي */
+            line-height: 1.4; text-align: justify;
+            overflow: hidden; white-space: pre-wrap;
+            display: flex; align-items: flex-start;
+        }
+
+        /* زر الرابط */
+        #p-link-btn {
+            position: absolute; top: 142mm; left: 188mm; width: 30mm;
+            padding: 25px; background: #00796b00; color: rgba(255, 255, 255, 0); text-align: center;
+            text-decoration: none; border-radius: 4px; font-size: 10pt;
+            display: none; 
+        }
+
+        /* صورة الخبر */
+        .img-box {
+            position: absolute; top: 25mm; left: 107mm;
+            width: 75mm; height: 130mm; 
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        #p-img { max-width: 100%; max-height: 100%; object-fit: cover; border-radius: 4px; }
+
+        @media print {
+            .no-print { display: none !important; }
+            #report-page { display: block !important; margin: 0; border: none; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <h2>تعبئة القالب الأفقي المباشر</h2>
+    <div class="grid-input">
+        <input type="text" id="serialNum" placeholder="الرقم التسلسلي (مثلاً 01)" oninput="sync()">
+        <input type="text" id="newspaper" placeholder="اسم الصحيفة" oninput="sync()">
+        <input type="text" id="dateText" placeholder="التاريخ" oninput="sync()">
+        <textarea id="keywords" placeholder="الكلمات المفتاحية" class="full" oninput="sync()"></textarea>
+        <textarea id="fullText" rows="6" placeholder="نص الخبر الكامل" class="full" oninput="sync()"></textarea>
+        <input type="url" id="newsLink" placeholder="رابط الخبر (مخفي خلف الزر)" oninput="sync()">
+        <div class="full">
+            <label>اختر صورة الخبر من جهازك:</label>
+            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(this)">
+        </div>
+    </div>
+    <button onclick="window.print()">توليد التقرير PDF 🖨️</button>
+</div>
+
+<div id="report-page">
+    <div id="p-serial" class="absolute-text"></div>
+    <div id="p-newspaper" class="absolute-text"></div>
+    <div id="p-date" class="absolute-text"></div>
+    <div id="p-keywords" class="absolute-text"></div>
+    <div id="p-text" class="absolute-text"></div>
+    <a id="p-link-btn" target="_blank">فتح رابط الخبر</a>
+    
+    <div class="img-box">
+        <img id="p-img" src="">
+    </div>
+</div>
+
+<script>
+    function sync() {
+        document.getElementById("report-page").style.display = "block";
+        document.getElementById("p-serial").innerText = document.getElementById("serialNum").value;
+        document.getElementById("p-newspaper").innerText = document.getElementById("newspaper").value;
+        document.getElementById("p-date").innerText = document.getElementById("dateText").value;
+        document.getElementById("p-keywords").innerText = document.getElementById("keywords").value;
+        
+        const textElem = document.getElementById("p-text");
+        textElem.innerText = document.getElementById("fullText").value;
+        
+        // تشغيل ميزة الخط التلقائي
+        adjustFontSize(textElem);
+
+        let link = document.getElementById("newsLink").value;
+        let btn = document.getElementById("p-link-btn");
+        if(link.startsWith('http')) {
+            btn.href = link;
+            btn.style.display = "block";
+        } else {
+            btn.style.display = "none";
+        }
+    }
+
+    // وظيفة تصغير الخط تلقائياً ليناسب المربع
+    function adjustFontSize(element) {
+        let fontSize = 13; // الحجم الابتدائي بـ pt
+        element.style.fontSize = fontSize + "pt";
+
+        // تقليل الخط طالما أن النص يتجاوز ارتفاع المربع المخصص (130mm)
+        while (element.scrollHeight > element.offsetHeight && fontSize > 7) {
+            fontSize -= 0.5;
+            element.style.fontSize = fontSize + "pt";
+        }
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById("p-img").src = e.target.result;
+                document.getElementById("report-page").style.display = "block";
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+</body>
+</html>        .grid-input { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: sans-serif; }
         .full { grid-column: span 2; }
         button { 
