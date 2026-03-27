@@ -10,7 +10,7 @@
             src: url('https://cdn.jsdelivr.net/gh/Alsaidi5/faisform/XB-NiloofarBd.woff') format('woff');
             font-weight: bold;
             font-style: normal;
-            font-display: swap; /* لضمان ظهور النص فوراً حتى يكتمل تحميل الخط */
+            font-display: swap;
         }
 
         @font-face {
@@ -27,11 +27,9 @@
             margin: 0; 
             padding: 0; 
             background: #e0e0e0; 
-            /* إضافة Fallback لضمان عدم اختفاء النص */
             font-family: 'XB Niloofar', 'Arial', 'Tahoma', sans-serif; 
         }
 
-        /* لوحة التحكم */
         .no-print { 
             max-width: 800px; margin: 20px auto; background: white; 
             padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
@@ -44,7 +42,6 @@
             border-radius: 8px; cursor: pointer; width: 100%; font-size: 18px; font-weight: bold; 
         }
 
-        /* قالب التقرير */
         #report-page {
             width: 297mm; height: 210mm;
             margin: auto; position: relative;
@@ -78,10 +75,19 @@
             display: flex; align-items: flex-start;
         }
 
+        /* تعديل الزر ليعمل على الجوال */
         #p-link-btn {
-            position: absolute; top: 142mm; left: 188mm; width: 30mm;
-            padding: 25px; background: transparent; color: transparent;
-            text-decoration: none; display: none; 
+            position: absolute; 
+            top: 142mm; 
+            left: 188mm; 
+            width: 35mm; 
+            height: 12mm; /* تحديد ارتفاع واضح للمس */
+            background: rgba(255, 255, 255, 0.01); /* خلفية شبه شفافة جداً ليراها المتصفح */
+            color: transparent;
+            text-decoration: none;
+            display: none; 
+            z-index: 100; /* رفعه فوق العناصر الأخرى */
+            cursor: pointer;
         }
 
         .img-box {
@@ -118,7 +124,9 @@
     <div id="p-date" class="absolute-text"></div>
     <div id="p-keywords" class="absolute-text"></div>
     <div id="p-text" class="absolute-text"></div>
-    <a id="p-link-btn" target="_blank">رابط</a>
+    
+    <a id="p-link-btn" target="_blank" title="رابط الخبر"></a>
+    
     <div class="img-box"><img id="p-img" src=""></div>
 </div>
 
@@ -136,8 +144,11 @@
 
         let link = document.getElementById("newsLink").value;
         let btn = document.getElementById("p-link-btn");
-        if(link.startsWith('http')) {
-            btn.href = link;
+        
+        // تعديل التحقق من الرابط ليكون أكثر مرونة
+        if(link.trim() !== "" && (link.startsWith('http') || link.startsWith('www'))) {
+            let finalLink = link.startsWith('www') ? 'https://' + link : link;
+            btn.href = finalLink;
             btn.style.display = "block";
         } else {
             btn.style.display = "none";
